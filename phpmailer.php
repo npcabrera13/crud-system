@@ -15,10 +15,10 @@ if ($id) {
         $gettemp = $db->prepare("SELECT reg_no, first_name, middle_name, last_name, affiliation, email, contact_no, receipt, license, date_created, specialization, date_exp, member, prc_name, sponsor, qr_event FROM temp_participants WHERE id = ?");
         $gettemp->execute([$id]);
 
-           if ($gettemp->rowCount()) {
+        if ($gettemp->rowCount()) {
             foreach ($gettemp->fetchAll() as $key => $row) {
                 // Insert into participants table
-                $insert = $db->prepare("INSERT INTO participants (reg_no, first_name, middle_name, last_name, affiliation, email, contact_no, receipt, license, date_created, specialization, date_exp, member, prc_name, sponsor, qr_event) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                $insert = $db->prepare("INSERT INTO  participants (reg_no, first_name, middle_name, last_name, affiliation, email, contact_no, receipt, license, date_created, specialization, date_exp, member, prc_name, sponsor, qr_event) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
                 !$insert->execute([
                     $row['reg_no'],
                     $row['first_name'],
@@ -40,21 +40,21 @@ if ($id) {
 
                 // Prepare and send email
                 $mail = new PHPMailer(true);
-                    $mail->isSMTP();
-                    $mail->Host = 'smtp.gmail.com';
-                    $mail->SMTPAuth = true;
-                    $mail->Username = 'visionarywebco@gmail.com'; // gmail
-                    $mail->Password = 'lzys khgs ovey ausd'; // app password of gmail
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                    $mail->Port = 587;
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = 'visionarywebco@gmail.com';
+                $mail->Password = 'lzys khgs ovey ausd';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
 
-                    $mail->setFrom('visionarywebco@gmail.com', 'PhilSPEN 17th Annual Convention');
-                    $mail->addAddress($row['email']);
-                    $mail->isHTML(true);
+                $mail->setFrom('visionarywebco@gmail.com', 'PhilSPEN 17th Annual Convention');
+                $mail->addAddress($row['email']);
+                $mail->isHTML(true);
 
-                    $mail->Subject = 'Registration Confirmation';
-                    $mail->Body = '<pre>Dear ' . htmlspecialchars(strtoupper($row['first_name'])) . ' ' . htmlspecialchars(strtoupper($row['middle_name'])) . ' ' . htmlspecialchars(strtoupper($row['last_name'])) . ', <br><br>'
-                        . 'Warm Greetings!
+                $mail->Subject = 'Registration Confirmation';
+                $mail->Body = '<pre>Dear ' . htmlspecialchars(strtoupper($row['first_name'])) . ' ' . htmlspecialchars(strtoupper($row['middle_name'])) . ' ' . htmlspecialchars(strtoupper($row['last_name'])) . ', <br><br>'
+                    . 'Warm Greetings!
                        
                         We are pleased to confirm receipt of your payment for the 17th PhilSPEN Annual Convention, themed NUTRITION MEDICINE: Integrated Approach to Patient Care, to be held on November 20-21, 2025, at Novotel Manila, Araneta City.
 
@@ -76,15 +76,15 @@ if ($id) {
                         Head, Registration and Membership Committee
                         Philippine Society for Parenteral and Enteral Nutrition
                         </pre>';
-               
-                        // $mail->addAttachment("../events/qr/$row[qr_event]");
-                        $qrFile = realpath(__DIR__ . '/../events/qr/' . basename($row['qr_event']));
-                        if ($qrFile && file_exists($qrFile)) {
-                            $mail->addAttachment($qrFile);
-                        }
 
-                   
-           $mail->send();
+                // $mail->addAttachment("../events/qr/$row[qr_event]");
+                $qrFile = realpath(__DIR__ . '/../events/qr/' . basename($row['qr_event']));
+                if ($qrFile && file_exists($qrFile)) {
+                    $mail->addAttachment($qrFile);
+                }
+
+
+                $mail->send();
                 echo "<script>
                         alert('Email sent successfully');
                       </script>";

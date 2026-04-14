@@ -7,12 +7,12 @@
 ---
 
 ## 📂 STEP 1: DATABASE CONNECTIVITY
-### Purpose
-Enables the application to communicate with the specialized staging table.
+**Purpose**: To allow the system to fetch data from the `temp_research` table.
 
-### Code Modification: Research.php
-- File Path: config/Research.php
-- Target Location: Following the getAll() method.
+### Code Change: `Research/config/Research.php`
+- **Location**: Around Line 85.
+- **Change**: Added `getTempAll()` method.
+- **Purpose**: Creates a specialized function to retrieve "Pending" applications.
 
 #### 📝 Before:
 ```php
@@ -28,13 +28,11 @@ public function getAll()
 ```php
 public function getAll()
 {
-    // Updated primary sort to ID
     $stmt = $this->con->prepare('SELECT * FROM researches ORDER BY id DESC');
     $stmt->execute();
     return $stmt->fetchAll();
 }
 
-// New method to fetch pending records
 public function getTempAll()
 {
     $stmt = $this->con->prepare('SELECT * FROM temp_research');
@@ -43,73 +41,81 @@ public function getTempAll()
 }
 ```
 
-```mermaid
-graph LR
-    A[Research Profile Page] -->|Calls| B[getTempAll]
-    B -->|SELECT * FROM| C[(temp_research Table)]
-    style C fill:#f9f,stroke:#333,stroke-width:2px
-```
-
 ---
 
 ## 🖥️ STEP 2: USER INTERFACE INTEGRATION
-### Purpose
-Visualizes the pending records on the main dashboard for administrative oversight.
+**Purpose**: To show administrators all data currently waiting for approval.
 
-### Component Creation: tempresearch.php
-- This standalone component contains the HTML table for pending applications.
-- It uses id=pendingTable to maintain independent search and filtering logic.
+### Code Change: `tempresearch.php`
+- **Location**: Entire File.
+- **Change**: Created a table with placeholders for "Accept" and "Decline" buttons.
+- **Purpose**: Acts as a component to visualize data from the staging area.
 
-### Main View Integration: index.php
-- File Path: Research/index.php
-- Target Location: Page footer section.
+### Code Integration: `Research/index.php`
+- **Location**: Top and Bottom of the file.
+- **Change**: Added `include "../tempresearch.php";` and the action handler.
+- **Purpose**: "Links" the pending component and processes the logic at the top of the page.
 
-#### 📝 After (Added Include):
+#### 📝 Implementation:
 ```php
-    <!-- End of Main Research Section -->
-    </section>
-
-    <!-- PENDING APPLICATIONS COMPONENT -->
-    <?php include "../tempresearch.php"; ?>
-</div>
+<?php
+include "config/Research.php";
+$research->handleApprovals(); // Added at the top to fix header issues
+$data = $research->getAll();
+?>
 ```
 
 ---
 
-## 🚀 STEP 3: SUBMISSION STAGING LOGIC
-### Purpose
-Redirects raw data entry to the review chamber (temp_research) instead of the final database.
+## 🚀 STEP 3: SUBMISSION STAGING (ADD TO TEMP)
+**Purpose**: To ensure all **new** research entries go to the `temp_research` table first.
 
-### Code Modification: Research.php
-- File Path: config/Research.php
-- Logic Hook: Add() method.
+### Code Change: `Research/config/Research.php`
+- **Location**: Around Line 52 (in `Add()` method).
+- **Change**: Changed `INSERT INTO researches` to `INSERT INTO temp_research`.
+- **Purpose**: Diverts raw submissions to a staging area for review instead of the final database.
 
-#### 📝 Before (Direct to Main):
+#### 📝 Code Logic:
 ```php
-$stmt = $this->con->prepare("INSERT INTO researches (...) VALUES (...)");
-```
-
-#### 📝 After (Redirect to Staging):
-```php
+// Redirected target from "researches" to "temp_research"
 $stmt = $this->con->prepare("INSERT INTO temp_research (...) VALUES (...)");
 ```
 
-### 📊 System Architecture Flow
-```mermaid
-sequenceDiagram
-    autonumber
-    participant User
-    participant Form as Add Research Form
-    participant DB as temp_research Table
-    participant Dashboard as Research Profile
-    
-    User->>Form: Fills details & Submits
-    Form->>DB: INSERT into staging
-    Note over DB: State: PENDING
-    DB-->>Dashboard: Refresh & Render in Pending Table
-```
+---
+
+## ✅ STEP 4: THE APPROVAL LOGIC (MOVE TO MAIN)
+**Purpose**: Handles the moving of data between tables when the "Accept" button is clicked.
+
+### Code Change: `Research/config/Research.php`
+- **Location**: Around Line 131.
+- **Change**: Added `handleApprovals()`, `accept()`, and `decline()`.
+- **Purpose**: This creates the "brain" for the buttons.
 
 ---
 
-> [!NOTE]
-> All changes are currently committed to the local and remote repository for safety.
+## 🛠️ THE CORE LOGIC (HOW IT WORKS)
+---
+
+### 1. The Submission Diverter
+When a user clicks "Submit" on the Add Research form, the system uses a "Track Switch." Instead of the data going to the final list, the code points it to the **Review Chamber** (`temp_research`).
+
+### 2. The Move-and-Clean Process
+When the Admin clicks **Accept**, the backend runs a "Copy and Paste" operation:
+1. **FETCH**: System grabs the pending data.
+2. **INSERT**: System copies it to the main table.
+3. **DELETE**: System wipes the temp table so the pending list doesn't get cluttered.
+
+```mermaid
+graph TD
+    A[Add Form] -->|Submits| B[(temp_research Table)]
+    B -->|Accept Action| C[Copy to researches Table]
+    C -->|Success| D[Delete from temp_research]
+```
+
+### 3. The Action Handler
+The `handleApprovals()` function at the top of the index page "listens" for button clicks. If it hears a click, it runs the code and refreshes the page so you see the data move instantly without errors.
+
+---
+
+> [!TIP]
+> This "Staging Pattern" is used in professional apps to ensure all data is verified before it goes live!
