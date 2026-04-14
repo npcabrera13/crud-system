@@ -1,5 +1,6 @@
 <?php
 include "config/Research.php";
+$research->handleApprovals();
 $data = $research->getAll();
 ?>
 <!DOCTYPE html>
@@ -67,6 +68,9 @@ $data = $research->getAll();
                 </table>
             </div>
         </section>
+
+        <!-- Pending Applications Section -->
+        <?php include "../tempresearch.php"; ?>
     </div>
 
     <!-- Initialization Script -->
