@@ -1,1 +1,0 @@
-<link rel="stylesheet" href="/crud/activity/acti/bootstrap-5.0.2-dist/css/bootstrap.min.css">
