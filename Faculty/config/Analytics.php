@@ -36,6 +36,7 @@ class Analytics
             SELECT research_status as label, COUNT(*) as total 
             FROM researches 
             GROUP BY research_status
+            ORDER BY FIELD(research_status, 'PROPOSAL', 'ONGOING', 'COMPLETED', 'PUBLISHED')
         ");
         $stmt->execute();
         return $stmt->fetchAll();

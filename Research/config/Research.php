@@ -165,16 +165,6 @@ class Research
                 header("Location: index.php");
                 exit;
             }
-            if (isset($_POST['revision_id'])) {
-                if ($this->sendEmail($_POST['revision_id'], 'revision')) {
-                    $_SESSION['email_status'] = "Revision request email sent successfully.";
-                } else {
-                    $_SESSION['email_status'] = "Revision status updated, but email failed.";
-                }
-                $this->revision($_POST['revision_id']);
-                header("Location: index.php");
-                exit;
-            }
         }
     }
 
@@ -209,9 +199,6 @@ class Research
             } elseif ($type === 'declined') {
                 $mail->Subject = 'Research Proposal Status Update';
                 $mail->Body = "<h3>Notice of Status</h3><p>We regret to inform you that your research proposal titled <b>$title</b> has been <b>Declined</b> at this time.</p>";
-            } elseif ($type === 'revision') {
-                $mail->Subject = 'Revision Required: ' . $title;
-                $mail->Body = "<h3>Revision Needed</h3><p>Your research proposal titled <b>$title</b> requires some <b>Revisions</b>. Please check the portal for feedback and resubmit your work.</p>";
             }
 
             $mail->send();
@@ -230,11 +217,15 @@ class Research
 
         if ($row) {
             $stmt = $this->con->prepare("INSERT INTO researches (research_date, research_title, co_authors, email_address, campus, college, date_started, target_completion_date, research_status, description_abstract, research_agenda, sdg_goals, publication_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            
+            // If the status is PUBLISHED, we set the publication_status accordingly
+            $pubStatus = (strtoupper($row['research_status']) === 'PUBLISHED') ? 'PUBLISHED' : 'NOT SUBMITTED';
+            
             $stmt->execute([
                 $row['research_date'], $row['research_title'], $row['co_authors'], $row['email_address'],
                 $row['campus'], $row['college'], $row['date_started'], $row['target_completion_date'],
-                $row['research_status'], $row['description_abstract'], $row['research_agenda'],
-                $row['sdg_goals'], $row['publication_status']
+                strtoupper($row['research_status']), $row['description_abstract'], $row['research_agenda'],
+                $row['sdg_goals'], $pubStatus
             ]);
             $this->decline($id);
             return true;
@@ -246,14 +237,6 @@ class Research
     public function decline($id)
     {
         $stmt = $this->con->prepare("DELETE FROM temp_research WHERE id = ?");
-        $stmt->execute([$id]);
-        return $stmt->rowCount() > 0;
-    }
-
-    // Updates the status to REVISION in the temp_research table
-    public function revision($id)
-    {
-        $stmt = $this->con->prepare("UPDATE temp_research SET research_status = 'REVISION' WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->rowCount() > 0;
     }

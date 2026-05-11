@@ -49,7 +49,7 @@ $fullName = htmlspecialchars($row['first_name'] . ' ' . $row['middle_name'] . ' 
       <div class="card-header bg-white border-bottom">
         <ul class="nav nav-tabs card-header-tabs px-3">
           <li class="nav-item">
-            <a class="nav-link text-primary" href="#">Home</a>
+            <a class="nav-link text-primary" href="/crud/dashboard.php">Home</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active fw-bold" href="../index.php">Faculty Profile</a>
@@ -58,7 +58,7 @@ $fullName = htmlspecialchars($row['first_name'] . ' ' . $row['middle_name'] . ' 
             <a class="nav-link text-primary" href="/crud/Research/index.php">Research Profile</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-primary" href="#">Downloadable Forms</a>
+            <a class="nav-link text-primary" href="../forms.php">Downloadable Forms</a>
           </li>
         </ul>
       </div>

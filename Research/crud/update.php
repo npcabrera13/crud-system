@@ -95,19 +95,13 @@ if (isset($_POST['Update'])) {
         <div class="mb-3">
             <label>Research Status</label>
             <select name="research_status" class="form-select">
-                <option value="Proposal" <?= $row['research_status'] == 'Proposal' ? 'selected' : '' ?>>Proposal</option>
-                <option value="Ongoing" <?= $row['research_status'] == 'Ongoing' ? 'selected' : '' ?>>Ongoing</option>
-                <option value="Completed" <?= $row['research_status'] == 'Completed' ? 'selected' : '' ?>>Completed</option>
+                <option value="Proposal" <?= strtoupper($row['research_status']) == 'PROPOSAL' ? 'selected' : '' ?>>Proposal</option>
+                <option value="Ongoing" <?= strtoupper($row['research_status']) == 'ONGOING' ? 'selected' : '' ?>>Ongoing</option>
+                <option value="Completed" <?= strtoupper($row['research_status']) == 'COMPLETED' ? 'selected' : '' ?>>Completed</option>
+                <option value="Published" <?= strtoupper($row['research_status']) == 'PUBLISHED' ? 'selected' : '' ?>>Published</option>
             </select>
-        </div>
-
-        <div class="mb-3">
-            <label>Publication Status</label>
-            <select name="publication_status" class="form-select">
-                <option value="Pending" <?= $row['publication_status'] == 'Pending' ? 'selected' : '' ?>>Pending</option>
-                <option value="Published" <?= $row['publication_status'] == 'Published' ? 'selected' : '' ?>>Published</option>
-                <option value="Unpublished" <?= $row['publication_status'] == 'Unpublished' ? 'selected' : '' ?>>Unpublished</option>
-            </select>
+            <!-- Hidden field for backend compatibility -->
+            <input type="hidden" name="publication_status" value="N/A">
         </div>
 
         <div class="mt-4">

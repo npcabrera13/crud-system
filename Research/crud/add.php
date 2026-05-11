@@ -92,16 +92,10 @@ $research->Add();
                 <option value="Proposal">Proposal</option>
                 <option value="Ongoing">Ongoing</option>
                 <option value="Completed">Completed</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label>Publication Status</label>
-            <select name="publication_status" class="form-select">
-                <option value="Pending">Pending</option>
                 <option value="Published">Published</option>
-                <option value="Unpublished">Unpublished</option>
             </select>
+            <!-- Hidden field for backend compatibility -->
+            <input type="hidden" name="publication_status" value="N/A">
         </div>
 
         <div class="mt-4">

@@ -32,10 +32,6 @@ $tempData = $research->getTempAll();
                                 <button type="submit" class="btn btn-success btn-sm">Accept</button>
                             </form>
                             <form method="POST" style="display:inline-block;">
-                                <input type="hidden" name="revision_id" value="<?= $row['id'] ?>">
-                                <button type="submit" class="btn btn-warning btn-sm">Revision</button>
-                            </form>
-                            <form method="POST" style="display:inline-block;">
                                 <input type="hidden" name="decline_id" value="<?= $row['id'] ?>">
                                 <button type="submit" class="btn btn-danger btn-sm">Decline</button>
                             </form>
@@ -51,8 +47,13 @@ $tempData = $research->getTempAll();
     $(document).ready(function () {
         if (!$.fn.DataTable.isDataTable('#pendingTable')) {
             $('#pendingTable').DataTable({
+                dom: 'Bfrtip',
+                buttons: [
+                    { extend: 'excel', className: 'btn btn-success btn-sm', text: 'Export to Excel' },
+                    { extend: 'pdf', className: 'btn btn-danger btn-sm', text: 'Export to PDF' }
+                ],
                 "order": [[0, "desc"]],
-                "pageLength": 5
+                "pageLength": 10
             });
         }
     });

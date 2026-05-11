@@ -15,7 +15,7 @@ $data = $faculty->getAll();
       <div class="card-header bg-white border-bottom">
         <ul class="nav nav-tabs card-header-tabs px-3">
           <li class="nav-item">
-            <a class="nav-link text-primary" href="/crud/index.php">Home</a>
+            <a class="nav-link text-primary" href="/crud/dashboard.php">Home</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active fw-bold" href="#">Faculty Profile</a>
