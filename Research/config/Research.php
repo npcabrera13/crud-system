@@ -2,6 +2,14 @@
 
 require_once __DIR__ . '/Pdo.php';
 
+// Load PHPMailer classes (Adjusted paths to match your folder)
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once __DIR__ . '/../../../PHPMailer-master/src/Exception.php';
+require_once __DIR__ . '/../../../PHPMailer-master/src/PHPMailer.php';
+require_once __DIR__ . '/../../../PHPMailer-master/src/SMTP.php';
+
 class Research
 {
     public $research_date;
@@ -138,15 +146,78 @@ class Research
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_POST['accept_id'])) {
+                if ($this->sendEmail($_POST['accept_id'], 'accepted')) {
+                    $_SESSION['email_status'] = "Research Accepted and email sent successfully!";
+                } else {
+                    $_SESSION['email_status'] = "Research Accepted, but email notification failed. Please check SMTP settings.";
+                }
                 $this->accept($_POST['accept_id']);
                 header("Location: index.php");
                 exit;
             }
             if (isset($_POST['decline_id'])) {
+                if ($this->sendEmail($_POST['decline_id'], 'declined')) {
+                    $_SESSION['email_status'] = "Notification email sent regarding the rejection.";
+                } else {
+                    $_SESSION['email_status'] = "Research Declined, but email notification failed.";
+                }
                 $this->decline($_POST['decline_id']);
                 header("Location: index.php");
                 exit;
             }
+            if (isset($_POST['revision_id'])) {
+                if ($this->sendEmail($_POST['revision_id'], 'revision')) {
+                    $_SESSION['email_status'] = "Revision request email sent successfully.";
+                } else {
+                    $_SESSION['email_status'] = "Revision status updated, but email failed.";
+                }
+                $this->revision($_POST['revision_id']);
+                header("Location: index.php");
+                exit;
+            }
+        }
+    }
+
+    // Sends email notifications based on action type
+    private function sendEmail($id, $type)
+    {
+        $stmt = $this->con->prepare("SELECT * FROM temp_research WHERE id = ?");
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+
+        if (!$row) return;
+
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'visionarywebco@gmail.com';
+            $mail->Password = 'kqrzoggmmufzxlpk';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+
+            $mail->setFrom('visionarywebco@gmail.com', 'Research Department');
+            $mail->addAddress($row['email_address']);
+            $mail->isHTML(true);
+
+            $title = strtoupper($row['research_title']);
+
+            if ($type === 'accepted') {
+                $mail->Subject = 'Research Proposal Accepted';
+                $mail->Body = "<h3>Congratulations!</h3><p>Your research proposal titled <b>$title</b> has been <b>Accepted</b>. You may now proceed with your research.</p>";
+            } elseif ($type === 'declined') {
+                $mail->Subject = 'Research Proposal Status Update';
+                $mail->Body = "<h3>Notice of Status</h3><p>We regret to inform you that your research proposal titled <b>$title</b> has been <b>Declined</b> at this time.</p>";
+            } elseif ($type === 'revision') {
+                $mail->Subject = 'Revision Required: ' . $title;
+                $mail->Body = "<h3>Revision Needed</h3><p>Your research proposal titled <b>$title</b> requires some <b>Revisions</b>. Please check the portal for feedback and resubmit your work.</p>";
+            }
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            return false;
         }
     }
 
@@ -175,6 +246,14 @@ class Research
     public function decline($id)
     {
         $stmt = $this->con->prepare("DELETE FROM temp_research WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->rowCount() > 0;
+    }
+
+    // Updates the status to REVISION in the temp_research table
+    public function revision($id)
+    {
+        $stmt = $this->con->prepare("UPDATE temp_research SET research_status = 'REVISION' WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->rowCount() > 0;
     }

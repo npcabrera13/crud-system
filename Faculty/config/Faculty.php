@@ -7,6 +7,9 @@ use Classes\FileUpload;
 
 class Faculty
 {
+    public string $first_name;
+    public string $middle_name;
+    public string $last_name;
     public string $employee_no;
     public string $academic_rank;
     public string $date_created;
@@ -35,6 +38,9 @@ class Faculty
     public function getPost(): void
     {
         if (!empty($_POST)) {
+            $this->first_name = $_POST['first_name'] ?? '';
+            $this->middle_name = $_POST['middle_name'] ?? '';
+            $this->last_name = $_POST['last_name'] ?? '';
             $this->employee_no = $_POST['employee_no'];
             $this->academic_rank = $_POST['academic_rank'];
             $this->date_created = $_POST['date_created'];
@@ -66,8 +72,11 @@ class Faculty
                 }
             }
 
-            $stmt = $this->con->prepare("INSERT INTO faculties (employee_no, academic_rank, date_created, gender, birthday, contact_number, city_municipality, province, discipline, campus, college, google_scholar_id, research_gate_id, scopus_id, web_of_science_id, image) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            $stmt = $this->con->prepare("INSERT INTO faculties (first_name, middle_name, last_name, employee_no, academic_rank, date_created, gender, birthday, contact_number, city_municipality, province, discipline, campus, college, google_scholar_id, research_gate_id, scopus_id, web_of_science_id, image) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             $stmt->execute([
+                $this->first_name,
+                $this->middle_name,
+                $this->last_name,
                 $this->employee_no,
                 $this->academic_rank,
                 $this->date_created,
@@ -121,8 +130,23 @@ class Faculty
     {
         $this->getPost();
         if (!empty($_POST)) {
-            $stmt = $this->con->prepare('UPDATE faculties SET employee_no = ?, academic_rank = ?, date_created = ?, gender = ?, birthday = ?, contact_number = ?, city_municipality = ?, province = ?, discipline = ?, campus = ?, college = ?, google_scholar_id = ?, research_gate_id = ?, scopus_id = ?, web_of_science_id = ?, image = ? WHERE id = ?');
+            // Handle image upload if a new one is provided
+            if (isset($_FILES['image']) && !empty($_FILES['image']['name'])) {
+                $uploads = new FileUpload($_FILES['image'], '../../pics/');
+                if ($uploads->upload()) {
+                    $this->image = $uploads->fileName;
+                }
+            } else {
+                // Keep the old image if no new one is uploaded
+                $existing = $this->view($id);
+                $this->image = $existing['image'] ?? '';
+            }
+
+            $stmt = $this->con->prepare('UPDATE faculties SET first_name = ?, middle_name = ?, last_name = ?, employee_no = ?, academic_rank = ?, date_created = ?, gender = ?, birthday = ?, contact_number = ?, city_municipality = ?, province = ?, discipline = ?, campus = ?, college = ?, google_scholar_id = ?, research_gate_id = ?, scopus_id = ?, web_of_science_id = ?, image = ? WHERE id = ?');
             $stmt->execute([
+                $this->first_name,
+                $this->middle_name,
+                $this->last_name,
                 $this->employee_no,
                 $this->academic_rank,
                 $this->date_created,

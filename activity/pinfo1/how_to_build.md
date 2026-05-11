@@ -60,7 +60,7 @@ Finally, we "glue" everything together on the main dashboard page.
 2. **Action**: 
    - **Line 3**: Add `$research->handleApprovals();` (Must be at the very top before any HTML!).
    - **Page Footer**: Add `include "../tempresearch.php";` where you want the table to appear.
-
+   
 ---
 
 ### 💡 SUMMARY OF THE "SECRET SAUCE"

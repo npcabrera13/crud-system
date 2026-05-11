@@ -1,4 +1,5 @@
 <?php
+session_start();
 include "config/Research.php";
 $research->handleApprovals();
 $data = $research->getAll();
@@ -8,6 +9,13 @@ $data = $research->getAll();
 <head>
     <meta charset="UTF-8">
     <title>Research List</title>
+    <!-- Add simple script to show alerts from session -->
+    <?php if (isset($_SESSION['email_status'])): ?>
+        <script>
+            alert("<?php echo $_SESSION['email_status']; ?>");
+        </script>
+        <?php unset($_SESSION['email_status']); ?>
+    <?php endif; ?>
     <?php include "config/libraries.php"; ?>
 </head>
 <body class="bg-light">
@@ -16,7 +24,7 @@ $data = $research->getAll();
       <div class="card-header bg-white border-bottom">
         <ul class="nav nav-tabs card-header-tabs px-3">
           <li class="nav-item">
-            <a class="nav-link text-primary" href="#">Home</a>
+            <a class="nav-link text-primary" href="/crud/index.php">Home</a>
           </li>
           <li class="nav-item">
             <a class="nav-link text-primary" href="/crud/Faculty/index.php">Faculty Profile</a>
@@ -25,7 +33,7 @@ $data = $research->getAll();
             <a class="nav-link active fw-bold" href="#">Research Profile</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-primary" href="#">Downloadable Forms</a>
+            <a class="nav-link text-primary" href="../Faculty/forms.php">Downloadable Forms</a>
           </li>
         </ul>
       </div>

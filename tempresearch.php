@@ -32,6 +32,10 @@ $tempData = $research->getTempAll();
                                 <button type="submit" class="btn btn-success btn-sm">Accept</button>
                             </form>
                             <form method="POST" style="display:inline-block;">
+                                <input type="hidden" name="revision_id" value="<?= $row['id'] ?>">
+                                <button type="submit" class="btn btn-warning btn-sm">Revision</button>
+                            </form>
+                            <form method="POST" style="display:inline-block;">
                                 <input type="hidden" name="decline_id" value="<?= $row['id'] ?>">
                                 <button type="submit" class="btn btn-danger btn-sm">Decline</button>
                             </form>

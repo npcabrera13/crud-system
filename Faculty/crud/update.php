@@ -35,9 +35,21 @@ if (isset($_POST['update'])) {
     </div>
     <div class="container bg-white p-5 shadow-sm rounded">
         <h1 class="mb-4">Update Faculty Record</h1>
-        <form class="row g-3" method="POST">
+        <form class="row g-3" method="POST" enctype="multipart/form-data">
             <!-- Left Column -->
             <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">First Name</label>
+                    <input type="text" name="first_name" class="form-control" value="<?= htmlspecialchars($data['first_name']) ?>" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Middle Name</label>
+                    <input type="text" name="middle_name" class="form-control" value="<?= htmlspecialchars($data['middle_name']) ?>">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" name="last_name" class="form-control" value="<?= htmlspecialchars($data['last_name']) ?>" required>
+                </div>
                 <div class="mb-3">
                     <label class="form-label">Employee No.</label>
                     <input type="text" name="employee_no" class="form-control" value="<?= htmlspecialchars($data['employee_no']) ?>" required>
@@ -74,6 +86,11 @@ if (isset($_POST['update'])) {
                 <div class="mb-3">
                     <label class="form-label">Province</label>
                     <input type="text" name="province" class="form-control" value="<?= htmlspecialchars($data['province']) ?>" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Update Profile Picture</label>
+                    <input type="file" name="image" class="form-control" accept="image/*">
+                    <small class="text-muted">Current image: <?= $data['image'] ?: 'None' ?></small>
                 </div>
             </div>
 

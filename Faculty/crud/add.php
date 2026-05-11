@@ -33,6 +33,18 @@ $faculty->Add();
             <!-- Left Column -->
             <div class="col-md-6">
                 <div class="mb-3">
+                    <label class="form-label">First Name</label>
+                    <input type="text" name="first_name" class="form-control" placeholder="e.g. John" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Middle Name</label>
+                    <input type="text" name="middle_name" class="form-control" placeholder="e.g. D.">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" name="last_name" class="form-control" placeholder="e.g. Doe" required>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Employee No.</label>
                     <input type="text" name="employee_no" class="form-control" placeholder="e.g. 994" required>
                 </div>

@@ -15,7 +15,7 @@ $data = $faculty->getAll();
       <div class="card-header bg-white border-bottom">
         <ul class="nav nav-tabs card-header-tabs px-3">
           <li class="nav-item">
-            <a class="nav-link text-primary" href="#">Home</a>
+            <a class="nav-link text-primary" href="/crud/index.php">Home</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active fw-bold" href="#">Faculty Profile</a>
@@ -24,7 +24,7 @@ $data = $faculty->getAll();
             <a class="nav-link text-primary" href="/crud/Research/index.php">Research Profile</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-primary" href="#">Downloadable Forms</a>
+            <a class="nav-link text-primary" href="forms.php">Downloadable Forms</a>
           </li>
         </ul>
       </div>
@@ -40,11 +40,10 @@ $data = $faculty->getAll();
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>Full Name</th>
                             <th>Employee No.</th>
                             <th>Academic Rank</th>
-                            <th>Discipline</th>
                             <th>Campus</th>
-                            <th>Gender</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -52,15 +51,14 @@ $data = $faculty->getAll();
                         <?php foreach ($data as $row): ?>
                         <tr>
                             <td><?= $row['id'] ?></td>
+                            <td class="fw-bold"><?= strtoupper($row['first_name'] . ' ' . $row['last_name']) ?></td>
                             <td><?= strtoupper($row['employee_no']) ?></td>
                             <td><?= strtoupper($row['academic_rank']) ?></td>
-                            <td><?= strtoupper($row['discipline']) ?></td>
                             <td><?= strtoupper($row['campus']) ?></td>
-                            <td><?= strtoupper($row['gender']) ?></td>
                             <td>
                                 <a href="crud/view.php?id=<?= $row['id'] ?>" class="btn btn-success btn-sm">View</a>
                                 <a href="crud/update.php?id=<?= $row['id'] ?>" class="btn btn-primary btn-sm">Edit</a>
-                                <form method="POST" action="crud/delete.php" style="display:inline-block;">
+                                <form method="POST" action="crud/delete.php" style="display:inline-block;" onsubmit="return confirm('Are you sure?');">
                                     <input type="hidden" name="delete" value="<?= $row['id'] ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                 </form>
