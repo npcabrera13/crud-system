@@ -74,6 +74,11 @@ class Research
                 $this->publication_status,
             ]);
             $this->responseSQL($stmt);
+            
+            // Send submission email confirmation
+            $lastId = $this->con->lastInsertId();
+            $this->sendEmail($lastId, 'submitted');
+            
             header('Location: /crud/Research/index.php');
             exit;
         }
@@ -199,6 +204,9 @@ class Research
             } elseif ($type === 'declined') {
                 $mail->Subject = 'Research Proposal Status Update';
                 $mail->Body = "<h3>Notice of Status</h3><p>We regret to inform you that your research proposal titled <b>$title</b> has been <b>Declined</b> at this time.</p>";
+            } elseif ($type === 'submitted') {
+                $mail->Subject = 'Research Proposal Submitted';
+                $mail->Body = "<h3>Thank You!</h3><p>Your research proposal titled <b>$title</b> has been successfully <b>Submitted</b> and is currently pending admin review.</p>";
             }
 
             $mail->send();

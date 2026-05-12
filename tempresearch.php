@@ -25,7 +25,7 @@ $tempData = $research->getTempAll();
                         <td><?= date('M d, Y', strtotime($row['research_date'])) ?></td>
                         <td><?= strtoupper($row['research_title']) ?></td>
                         <td><?= strtoupper($row['campus']) ?></td>
-                        <td><?= strtoupper($row['research_status'] ?: 'PENDING') ?></td>
+                        <td><span class="badge bg-warning text-dark">PENDING</span></td>
                         <td class="text-end">
                             <form method="POST" style="display:inline-block;">
                                 <input type="hidden" name="accept_id" value="<?= $row['id'] ?>">

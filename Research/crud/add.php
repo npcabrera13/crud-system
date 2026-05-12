@@ -86,17 +86,9 @@ $research->Add();
             </div>
         </div>
 
-        <div class="mb-3">
-            <label>Research Status</label>
-            <select name="research_status" class="form-select">
-                <option value="Proposal">Proposal</option>
-                <option value="Ongoing">Ongoing</option>
-                <option value="Completed">Completed</option>
-                <option value="Published">Published</option>
-            </select>
-            <!-- Hidden field for backend compatibility -->
-            <input type="hidden" name="publication_status" value="N/A">
-        </div>
+        <!-- Hidden fields for new submissions -->
+        <input type="hidden" name="research_status" value="Proposal">
+        <input type="hidden" name="publication_status" value="N/A">
 
         <div class="mt-4">
             <button type="submit" name="Add" class="btn btn-primary">Submit</button>
