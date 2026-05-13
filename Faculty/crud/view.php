@@ -79,7 +79,7 @@ $fullName = htmlspecialchars($row['first_name'] . ' ' . $row['middle_name'] . ' 
                 <?php endif; ?>
             </div>
             <h2 class="fw-bold mb-1"><?= $fullName ?></h2>
-            <p class="text-muted">Email: <?= htmlspecialchars($row['first_name'] . '.' . $row['last_name']) ?>@example.com</p>
+            <p class="text-muted">Email: <?= htmlspecialchars($row['email_address'] ?: 'No email provided') ?></p>
         </div>
 
         <!-- Main Content Card -->
@@ -104,7 +104,7 @@ $fullName = htmlspecialchars($row['first_name'] . ' ' . $row['middle_name'] . ' 
                         </div>
                         <div class="mb-3">
                             <span class="fw-bold">Email:</span> 
-                            <span class="text-primary text-lowercase"><?= htmlspecialchars($row['first_name'] . '.' . $row['last_name']) ?>@example.com</span>
+                            <span class="text-primary text-lowercase"><?= htmlspecialchars($row['email_address'] ?: 'No email provided') ?></span>
                         </div>
                         <div class="mb-3">
                             <span class="fw-bold">Gender:</span> 

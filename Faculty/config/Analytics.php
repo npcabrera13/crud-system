@@ -76,4 +76,22 @@ class Analytics
         $stmt->execute();
         return $stmt->fetchAll();
     }
+
+    public function getFacultyStats()
+    {
+        $stats = [];
+        $stmt = $this->_db->prepare("SELECT COUNT(*) FROM faculties");
+        $stmt->execute();
+        $stats['total'] = $stmt->fetchColumn();
+
+        $stmt = $this->_db->prepare("SELECT COUNT(*) FROM faculties WHERE gender = 'Male'");
+        $stmt->execute();
+        $stats['male'] = $stmt->fetchColumn();
+
+        $stmt = $this->_db->prepare("SELECT COUNT(*) FROM faculties WHERE gender = 'Female'");
+        $stmt->execute();
+        $stats['female'] = $stmt->fetchColumn();
+
+        return $stats;
+    }
 }

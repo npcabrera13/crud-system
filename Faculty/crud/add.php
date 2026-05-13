@@ -45,6 +45,10 @@ $faculty->Add();
                     <input type="text" name="last_name" class="form-control" placeholder="e.g. Doe" required>
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email_address" class="form-control" placeholder="e.g. john.doe@example.com" required>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Employee No.</label>
                     <input type="text" name="employee_no" class="form-control" placeholder="e.g. 994" required>
                 </div>

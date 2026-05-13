@@ -160,6 +160,13 @@ $data = $research->getAll();
                     table.column(4).search('^' + status + '$', true, false).draw();
                 }
             });
+
+            // Check for URL Parameter to auto-filter
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusParam = urlParams.get('status');
+            if (statusParam) {
+                $(`#statusFilter .nav-link[data-status="${statusParam}"]`).trigger('click');
+            }
         });
     </script>
 </body>

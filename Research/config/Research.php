@@ -134,6 +134,10 @@ class Research
                 $id
             ]);
             $this->responseSQL($stmt);
+
+            // Send notification email
+            $this->sendEmail($id, 'updated');
+
             header('Location: /crud/Research/index.php');
             exit;
         }
@@ -141,6 +145,9 @@ class Research
 
     public function delete($id)
     {
+        // Send email before deleting
+        $this->sendEmail($id, 'deleted');
+
         $stmt = $this->con->prepare("DELETE FROM researches WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->rowCount() > 0;
@@ -176,7 +183,13 @@ class Research
     // Sends email notifications based on action type
     private function sendEmail($id, $type)
     {
-        $stmt = $this->con->prepare("SELECT * FROM temp_research WHERE id = ?");
+        // If it's update/delete, check main researches table, else check temp
+        if ($type === 'updated' || $type === 'deleted') {
+            $stmt = $this->con->prepare("SELECT * FROM researches WHERE id = ?");
+        } else {
+            $stmt = $this->con->prepare("SELECT * FROM temp_research WHERE id = ?");
+        }
+        
         $stmt->execute([$id]);
         $row = $stmt->fetch();
 
@@ -207,6 +220,12 @@ class Research
             } elseif ($type === 'submitted') {
                 $mail->Subject = 'Research Proposal Submitted';
                 $mail->Body = "<h3>Thank You!</h3><p>Your research proposal titled <b>$title</b> has been successfully <b>Submitted</b> and is currently pending admin review.</p>";
+            } elseif ($type === 'updated') {
+                $mail->Subject = 'Research Details Updated';
+                $mail->Body = "<h3>Research Update</h3><p>Your research titled <b>$title</b> has been successfully updated in the system.</p>";
+            } elseif ($type === 'deleted') {
+                $mail->Subject = 'Research Entry Removed';
+                $mail->Body = "<h3>Notice of Removal</h3><p>The research entry for <b>$title</b> has been removed from the ROMIS system.</p>";
             }
 
             $mail->send();

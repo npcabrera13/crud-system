@@ -3,6 +3,14 @@
 require_once __DIR__ . '/Pdo.php';
 require_once __DIR__ . '/../../Research/config/filepic.php';
 
+// Load PHPMailer classes
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once __DIR__ . '/../../../PHPMailer-master/src/Exception.php';
+require_once __DIR__ . '/../../../PHPMailer-master/src/PHPMailer.php';
+require_once __DIR__ . '/../../../PHPMailer-master/src/SMTP.php';
+
 use Classes\FileUpload;
 
 class Faculty
@@ -10,6 +18,7 @@ class Faculty
     public string $first_name;
     public string $middle_name;
     public string $last_name;
+    public string $email_address;
     public string $employee_no;
     public string $academic_rank;
     public string $date_created;
@@ -41,6 +50,7 @@ class Faculty
             $this->first_name = $_POST['first_name'] ?? '';
             $this->middle_name = $_POST['middle_name'] ?? '';
             $this->last_name = $_POST['last_name'] ?? '';
+            $this->email_address = $_POST['email_address'] ?? '';
             $this->employee_no = $_POST['employee_no'];
             $this->academic_rank = $_POST['academic_rank'];
             $this->date_created = $_POST['date_created'];
@@ -72,11 +82,12 @@ class Faculty
                 }
             }
 
-            $stmt = $this->con->prepare("INSERT INTO faculties (first_name, middle_name, last_name, employee_no, academic_rank, date_created, gender, birthday, contact_number, city_municipality, province, discipline, campus, college, google_scholar_id, research_gate_id, scopus_id, web_of_science_id, image) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            $stmt = $this->con->prepare("INSERT INTO faculties (first_name, middle_name, last_name, email_address, employee_no, academic_rank, date_created, gender, birthday, contact_number, city_municipality, province, discipline, campus, college, google_scholar_id, research_gate_id, scopus_id, web_of_science_id, image) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             $stmt->execute([
                 $this->first_name,
                 $this->middle_name,
                 $this->last_name,
+                $this->email_address,
                 $this->employee_no,
                 $this->academic_rank,
                 $this->date_created,
@@ -95,6 +106,11 @@ class Faculty
                 $this->image,
             ]);
             $this->responseSQL($stmt);
+
+            // Send notification email
+            $lastId = $this->con->lastInsertId();
+            $this->sendEmail($lastId, 'added');
+
             header('Location: /crud/Faculty/index.php');
             exit;
         }
@@ -112,6 +128,9 @@ class Faculty
 
     public function delete($id)
     {
+        // Send email before deleting so we still have the record
+        $this->sendEmail($id, 'deleted');
+
         $stmt = $this->con->prepare("DELETE FROM faculties WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->rowCount() > 0;
@@ -142,11 +161,12 @@ class Faculty
                 $this->image = $existing['image'] ?? '';
             }
 
-            $stmt = $this->con->prepare('UPDATE faculties SET first_name = ?, middle_name = ?, last_name = ?, employee_no = ?, academic_rank = ?, date_created = ?, gender = ?, birthday = ?, contact_number = ?, city_municipality = ?, province = ?, discipline = ?, campus = ?, college = ?, google_scholar_id = ?, research_gate_id = ?, scopus_id = ?, web_of_science_id = ?, image = ? WHERE id = ?');
+            $stmt = $this->con->prepare('UPDATE faculties SET first_name = ?, middle_name = ?, last_name = ?, email_address = ?, employee_no = ?, academic_rank = ?, date_created = ?, gender = ?, birthday = ?, contact_number = ?, city_municipality = ?, province = ?, discipline = ?, campus = ?, college = ?, google_scholar_id = ?, research_gate_id = ?, scopus_id = ?, web_of_science_id = ?, image = ? WHERE id = ?');
             $stmt->execute([
                 $this->first_name,
                 $this->middle_name,
                 $this->last_name,
+                $this->email_address,
                 $this->employee_no,
                 $this->academic_rank,
                 $this->date_created,
@@ -166,6 +186,10 @@ class Faculty
                 $id
             ]);
             $this->responseSQL($stmt);
+
+            // Send notification email
+            $this->sendEmail($id, 'updated');
+
             header('Location: /crud/Faculty/index.php');
             exit;
         }
@@ -183,6 +207,49 @@ class Faculty
     public function getResponse()
     {
         return $this->response;
+    }
+
+    // Sends email notifications based on action type
+    private function sendEmail($id, $type)
+    {
+        $stmt = $this->con->prepare("SELECT * FROM faculties WHERE id = ?");
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+
+        if (!$row) return;
+
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'visionarywebco@gmail.com';
+            $mail->Password = 'kqrzoggmmufzxlpk';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+
+            $mail->setFrom('visionarywebco@gmail.com', 'Faculty Department');
+            $mail->addAddress($row['email_address']);
+            $mail->isHTML(true);
+
+            $name = strtoupper($row['first_name'] . ' ' . $row['last_name']);
+
+            if ($type === 'added') {
+                $mail->Subject = 'Faculty Profile Created';
+                $mail->Body = "<h3>Welcome!</h3><p>A new faculty profile has been created for <b>$name</b> in the ROMIS system.</p>";
+            } elseif ($type === 'updated') {
+                $mail->Subject = 'Faculty Profile Updated';
+                $mail->Body = "<h3>Profile Update</h3><p>The faculty profile for <b>$name</b> has been successfully updated.</p>";
+            } elseif ($type === 'deleted') {
+                $mail->Subject = 'Faculty Profile Removed';
+                $mail->Body = "<h3>Notice of Removal</h3><p>The faculty profile for <b>$name</b> has been removed from the ROMIS system.</p>";
+            }
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 }
 

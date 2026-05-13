@@ -51,6 +51,10 @@ if (isset($_POST['update'])) {
                     <input type="text" name="last_name" class="form-control" value="<?= htmlspecialchars($data['last_name']) ?>" required>
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email_address" class="form-control" value="<?= htmlspecialchars($data['email_address']) ?>" required>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Employee No.</label>
                     <input type="text" name="employee_no" class="form-control" value="<?= htmlspecialchars($data['employee_no']) ?>" required>
                 </div>
