@@ -40,7 +40,10 @@ $data = $research->getAll();
       <div class="card-header bg-white border-bottom">
         <ul class="nav nav-tabs card-header-tabs px-3">
           <li class="nav-item">
-            <a class="nav-link text-primary" href="/crud/dashboard.php">Home</a>
+            <a class="nav-link text-primary" href="/crud/dashboard.php">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-primary" href="/crud/analytics.php">Analytics</a>
           </li>
           <li class="nav-item">
             <a class="nav-link text-primary" href="/crud/Faculty/index.php">Faculty Profile</a>
@@ -51,17 +54,43 @@ $data = $research->getAll();
           <li class="nav-item">
             <a class="nav-link text-primary" href="../Faculty/forms.php">Downloadable Forms</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link text-primary" href="/crud/process_flow.php">Process Flow</a>
+          </li>
         </ul>
       </div>
     </div>
 
     <div class="container-fluid px-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
             <h2 class="text-secondary">Research Directory</h2>
-            <a href="crud/add.php" class="btn btn-primary shadow-sm">
-                <i class="bi bi-plus-lg"></i> Add New Research
-            </a>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="bi bi-file-earmark-excel"></i> Import Excel
+                </button>
+                <a href="crud/add.php" class="btn btn-primary shadow-sm">
+                    <i class="bi bi-plus-lg"></i> Add New Research
+                </a>
+            </div>
         </div>
+
+        <?php if(isset($_GET['import_success'])): ?>
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <strong>Success!</strong> Successfully imported <?= htmlspecialchars($_GET['import_success']) ?> records to 
+                <?= ($_GET['target'] ?? 'pending') === 'main' ? 'the Main Directory' : 'Pending Research' ?>.
+                <?php if(isset($_GET['import_skipped']) && $_GET['import_skipped'] > 0): ?>
+                    <span class="ms-2 badge bg-warning text-dark"><?= htmlspecialchars($_GET['import_skipped']) ?> duplicates skipped</span>
+                <?php endif; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if(isset($_GET['import_error'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <strong>Error!</strong> <?= htmlspecialchars($_GET['import_error']) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
 
         <!-- Status Filter Tabs -->
         <div class="card border-0 shadow-sm mb-4">
@@ -117,7 +146,10 @@ $data = $research->getAll();
                                 <td class="text-end text-nowrap">
                                     <a href="crud/view.php?id=<?= $row['id'] ?>" class="btn btn-success btn-sm">View</a>
                                     <a href="crud/update.php?id=<?= $row['id'] ?>" class="btn btn-primary btn-sm">Edit</a>
-                                    <a href="crud/delete.php?id=<?= $row['id'] ?>" onclick="return confirm('Delete this record?')" class="btn btn-danger btn-sm">Delete</a>
+                                    <form method="POST" action="crud/delete.php" style="display:inline-block;" onsubmit="return confirm('Delete this record?');">
+                                        <input type="hidden" name="delete" value="<?= $row['id'] ?>">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -129,6 +161,54 @@ $data = $research->getAll();
 
         <!-- Pending Applications Section -->
         <?php include "../tempresearch.php"; ?>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="crud/import.php" method="POST" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importModalLabel">Import Research from Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Please use our template for the correct format.
+                            <br>
+                            <a href="crud/template.php" class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="bi bi-download"></i> Download Template (.csv)
+                            </a>
+                        </div>
+                        <div class="mb-3">
+                            <label for="csv_file" class="form-label fw-bold">Select Excel (CSV) File</label>
+                            <input type="file" name="csv_file" class="form-control" id="csv_file" accept=".csv" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Import To:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="target_table" id="targetPending" value="pending" checked>
+                                <label class="form-check-label" for="targetPending">
+                                    Pending Research (Requires Admin Approval)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="target_table" id="targetMain" value="main">
+                                <label class="form-check-label" for="targetMain">
+                                    Main Research Directory (Bypass Approval)
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-1">* Main directory imports will default to "PROPOSAL" status.</small>
+                        </div>
+                        <small class="text-muted">Note: Only .csv files are supported.</small>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" name="import" class="btn btn-success">Upload and Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>

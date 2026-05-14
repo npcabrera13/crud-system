@@ -268,6 +268,66 @@ class Research
         return $stmt->rowCount() > 0;
     }
 
+    // Import from CSV with Target Selection and Duplicate Checking
+    public function importFromCSV($filePath, $target = 'pending')
+    {
+        $handle = fopen($filePath, "r");
+        if ($handle !== FALSE) {
+            $headers = fgetcsv($handle, 1000, ",");
+            if (!$headers) return "Empty File";
+
+            $expectedHeaders = ['research_date', 'research_title', 'co_authors', 'email_address', 'campus', 'college', 'date_started', 'target_completion_date', 'research_status', 'description_abstract', 'research_agenda', 'sdg_goals', 'publication_status'];
+            
+            $headers = array_map('trim', array_map('strtolower', $headers));
+            foreach ($expectedHeaders as $expected) {
+                if (!in_array($expected, $headers)) {
+                    fclose($handle);
+                    return "Invalid Format: Missing column '$expected'";
+                }
+            }
+
+            $inserted = 0;
+            $skipped = 0;
+            $tableName = ($target === 'main') ? 'researches' : 'temp_research';
+            
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                $row = array_combine($headers, $data);
+                $title = trim($row['research_title']);
+
+                // Duplicate Check in BOTH tables
+                $check = $this->con->prepare("SELECT id FROM researches WHERE research_title = ? UNION SELECT id FROM temp_research WHERE research_title = ?");
+                $check->execute([$title, $title]);
+                if ($check->rowCount() > 0) {
+                    $skipped++;
+                    continue;
+                }
+                
+                $status = ($target === 'main') ? 'PROPOSAL' : ($row['research_status'] ?? 'PROPOSAL');
+
+                $stmt = $this->con->prepare("INSERT INTO $tableName (research_date, research_title, co_authors, email_address, campus, college, date_started, target_completion_date, research_status, description_abstract, research_agenda, sdg_goals, publication_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                $stmt->execute([
+                    $row['research_date'] ?? date('Y-m-d'),
+                    $title,
+                    $row['co_authors'] ?? '',
+                    $row['email_address'] ?? '',
+                    $row['campus'] ?? '',
+                    $row['college'] ?? '',
+                    $row['date_started'] ?? date('Y-m-d'),
+                    $row['target_completion_date'] ?? date('Y-m-d'),
+                    $status,
+                    $row['description_abstract'] ?? '',
+                    $row['research_agenda'] ?? '',
+                    $row['sdg_goals'] ?? '',
+                    $row['publication_status'] ?? 'NOT SUBMITTED'
+                ]);
+                $inserted++;
+            }
+            fclose($handle);
+            return ['inserted' => $inserted, 'skipped' => $skipped, 'target' => $target];
+        }
+        return "System Error: Could not read file";
+    }
+
     public function responseSQL($stmt)
     {
         if ($stmt->rowCount()) {

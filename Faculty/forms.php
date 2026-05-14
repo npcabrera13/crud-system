@@ -17,7 +17,10 @@ $data = $faculty->getAll();
       <div class="card-header bg-white border-bottom">
         <ul class="nav nav-tabs card-header-tabs px-3">
           <li class="nav-item">
-            <a class="nav-link text-primary" href="../dashboard.php">Home</a>
+            <a class="nav-link text-primary" href="../dashboard.php">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-primary" href="../analytics.php">Analytics</a>
           </li>
           <li class="nav-item">
             <a class="nav-link text-primary" href="index.php">Faculty Profile</a>
@@ -27,6 +30,9 @@ $data = $faculty->getAll();
           </li>
           <li class="nav-item">
             <a class="nav-link active fw-bold" href="#">Downloadable Forms</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-primary" href="../process_flow.php">Process Flow</a>
           </li>
         </ul>
       </div>

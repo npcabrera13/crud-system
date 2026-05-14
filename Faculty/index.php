@@ -15,7 +15,10 @@ $data = $faculty->getAll();
       <div class="card-header bg-white border-bottom">
         <ul class="nav nav-tabs card-header-tabs px-3">
           <li class="nav-item">
-            <a class="nav-link text-primary" href="/crud/dashboard.php">Home</a>
+            <a class="nav-link text-primary" href="/crud/dashboard.php">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-primary" href="/crud/analytics.php">Analytics</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active fw-bold" href="#">Faculty Profile</a>
@@ -26,13 +29,38 @@ $data = $faculty->getAll();
           <li class="nav-item">
             <a class="nav-link text-primary" href="forms.php">Downloadable Forms</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link text-primary" href="/crud/process_flow.php">Process Flow</a>
+          </li>
         </ul>
       </div>
     </div>
 
     <div class="container-fluid px-4">
         <h1 class="mb-4">Welcome to the Faculty Index Page</h1>
-        <a href="./crud/add.php" title="Add New Faculty" class="btn btn-primary mb-3">Add</a>
+        <div class="mb-3 d-flex gap-2">
+            <a href="./crud/add.php" title="Add New Faculty" class="btn btn-primary">Add New Faculty</a>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="bi bi-file-earmark-excel"></i> Import Excel
+            </button>
+        </div>
+
+        <?php if(isset($_GET['import_success'])): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Success!</strong> Successfully imported <?= htmlspecialchars($_GET['import_success']) ?> records.
+                <?php if(isset($_GET['import_skipped']) && $_GET['import_skipped'] > 0): ?>
+                    <span class="ms-2 badge bg-warning text-dark"><?= htmlspecialchars($_GET['import_skipped']) ?> duplicates skipped</span>
+                <?php endif; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if(isset($_GET['import_error'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Error!</strong> <?= htmlspecialchars($_GET['import_error']) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
         
         <!-- Gender Filter Tabs -->
         <div class="card border-0 shadow-sm mb-4">
@@ -91,6 +119,42 @@ $data = $faculty->getAll();
     </div>
 
     <script src="config/jtable.js"></script>
+    <!-- Import Modal -->
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="crud/import.php" method="POST" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importModalLabel">Import Faculty from Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> <strong>Bulk Upload Steps:</strong>
+                            <ol class="small mt-2 mb-0">
+                                <li>Download the template and fill in faculty details.</li>
+                                <li>Ensure the <strong>employee_no</strong> is unique for each person.</li>
+                                <li>Upload the CSV below to import all records at once.</li>
+                            </ol>
+                            <a href="crud/template.php" class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="bi bi-download"></i> Download Template (.csv)
+                            </a>
+                        </div>
+                        <div class="mb-3">
+                            <label for="csv_file" class="form-label fw-bold">Select Excel (CSV) File</label>
+                            <input type="file" name="csv_file" class="form-control" id="csv_file" accept=".csv" required>
+                        </div>
+                        <small class="text-muted">Note: Only .csv files are supported. You can save your Excel file as CSV (Comma Delimited).</small>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" name="import" class="btn btn-success">Upload and Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         $(document).ready(function () {
             // DataTables is initialized in jtable.js

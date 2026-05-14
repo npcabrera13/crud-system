@@ -209,6 +209,69 @@ class Faculty
         return $this->response;
     }
 
+    // Import from CSV with Duplicate Checking and Reporting
+    public function importFromCSV($filePath)
+    {
+        $handle = fopen($filePath, "r");
+        if ($handle !== FALSE) {
+            $headers = fgetcsv($handle, 1000, ",");
+            if (!$headers) return "Empty File";
+
+            $expectedHeaders = ['first_name', 'middle_name', 'last_name', 'email_address', 'employee_no', 'academic_rank', 'date_created', 'gender', 'birthday', 'contact_number', 'city_municipality', 'province', 'discipline', 'campus', 'college', 'google_scholar_id', 'research_gate_id', 'scopus_id', 'web_of_science_id'];
+            
+            $headers = array_map('trim', array_map('strtolower', $headers));
+            foreach ($expectedHeaders as $expected) {
+                if (!in_array($expected, $headers)) {
+                    fclose($handle);
+                    return "Invalid Format: Missing column '$expected'";
+                }
+            }
+
+            $inserted = 0;
+            $skipped = 0;
+            
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                $row = array_combine($headers, $data);
+                $empNo = trim($row['employee_no']);
+
+                // Duplicate Check
+                $check = $this->con->prepare("SELECT id FROM faculties WHERE employee_no = ?");
+                $check->execute([$empNo]);
+                if ($check->rowCount() > 0) {
+                    $skipped++;
+                    continue;
+                }
+                
+                $stmt = $this->con->prepare("INSERT INTO faculties (first_name, middle_name, last_name, email_address, employee_no, academic_rank, date_created, gender, birthday, contact_number, city_municipality, province, discipline, campus, college, google_scholar_id, research_gate_id, scopus_id, web_of_science_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                $stmt->execute([
+                    $row['first_name'] ?? '',
+                    $row['middle_name'] ?? '',
+                    $row['last_name'] ?? '',
+                    $row['email_address'] ?? '',
+                    $empNo,
+                    $row['academic_rank'] ?? '',
+                    $row['date_created'] ?? date('Y-m-d'),
+                    $row['gender'] ?? '',
+                    $row['birthday'] ?? '',
+                    $row['contact_number'] ?? '',
+                    $row['city_municipality'] ?? '',
+                    $row['province'] ?? '',
+                    $row['discipline'] ?? '',
+                    $row['campus'] ?? '',
+                    $row['college'] ?? '',
+                    $row['google_scholar_id'] ?? '',
+                    $row['research_gate_id'] ?? '',
+                    $row['scopus_id'] ?? '',
+                    $row['web_of_science_id'] ?? ''
+                ]);
+                $inserted++;
+            }
+            fclose($handle);
+            return ['inserted' => $inserted, 'skipped' => $skipped];
+        }
+        return "System Error: Could not read file";
+    }
+
     // Sends email notifications based on action type
     private function sendEmail($id, $type)
     {
@@ -216,7 +279,8 @@ class Faculty
         $stmt->execute([$id]);
         $row = $stmt->fetch();
 
-        if (!$row) return;
+        if (!$row)
+            return;
 
         $mail = new PHPMailer(true);
         try {
